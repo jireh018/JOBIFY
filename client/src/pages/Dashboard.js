@@ -1,4 +1,7 @@
+import React, { useEffect } from 'react'
+
 const DashBoard = () => {
+
     return (
         <div>
             <h1>DashBoard</h1>

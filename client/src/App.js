@@ -1,3 +1,4 @@
+import React from 'react'
 import { Landing, Register, Dashboard, Error } from "./pages";
 import styled from 'styled-components'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
