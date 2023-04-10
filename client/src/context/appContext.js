@@ -1,7 +1,9 @@
 import React, { useState, useReducer, useContext } from 'react'
 import {
     DISPLAY_ALERT, CLEAR_ALERT,
-    SETUP_USER_BEGIN, SETUP_USER_SUCCESS, SETUP_USER_ERROR
+    SETUP_USER_BEGIN, SETUP_USER_SUCCESS, SETUP_USER_ERROR,
+    TOGGLE_SIDEBAR,
+    LOGOUT_USER,
 } from './actions'
 import reducer from './reducer'
 import axios from 'axios'
@@ -19,6 +21,7 @@ const initialState = {
     token: token || null,
     userLocation: userLocation || '',
     jobLocation: userLocation || '',
+    showSidebar: false,
 }
 
 const AppContext = React.createContext()
@@ -49,7 +52,56 @@ const AppProvider = ({ children }) => {
         localStorage.removeItem('location')
     }
 
-    // const registerUser = async (currentUser) => {
+    const setupUser = async ({ currentUser, endPoint, alertText }) => {
+        dispatch({ type: SETUP_USER_BEGIN })
+        try {
+            const { data } = await axios.post(`/api/v1/auth/${endPoint}`, currentUser)
+            //console.log(response)
+            const { user, token, location } = data
+            dispatch({
+                type: SETUP_USER_SUCCESS,
+                payload: { user, token, location, alertText }
+            })
+            //localStorage
+            addUserToLocalStorage({ user, token, location, alertText })
+        } catch (error) {
+            //console.log(error.response)
+            dispatch({
+                type: SETUP_USER_ERROR,
+                payload: {
+                    msg: error.response.data.msg,
+                }
+            })
+        }
+        clearAlert()
+    }
+
+    const toggleSidebar = () => {
+        dispatch({
+            type: TOGGLE_SIDEBAR
+        })
+    }
+
+    const logoutUser = () => {
+        dispatch({
+            type: LOGOUT_USER
+        })
+        removeUserToLocalStorage()
+    }
+
+    return <AppContext.Provider value={{ ...state, displayAlert, setupUser, toggleSidebar, logoutUser }}>
+        {children}
+    </AppContext.Provider>
+}
+
+const useAppContext = () => {
+    return useContext(AppContext)
+}
+
+export { AppProvider, initialState, useAppContext }
+
+
+// const registerUser = async (currentUser) => {
     //     dispatch({ type: REGISTER_USER_BEGIN })
     //     try {
     //         const response = await axios.post('/api/v1/auth/register', currentUser)
@@ -96,38 +148,3 @@ const AppProvider = ({ children }) => {
     //     }
     //     clearAlert()
     // }
-
-    const setupUser = async ({ currentUser, endPoint, alertText }) => {
-        dispatch({ type: SETUP_USER_BEGIN })
-        try {
-            const { data } = await axios.post(`/api/v1/auth/${endPoint}`, currentUser)
-            //console.log(response)
-            const { user, token, location } = data
-            dispatch({
-                type: SETUP_USER_SUCCESS,
-                payload: { user, token, location, alertText }
-            })
-            //localStorage
-            addUserToLocalStorage({ user, token, location, alertText })
-        } catch (error) {
-            //console.log(error.response)
-            dispatch({
-                type: SETUP_USER_ERROR,
-                payload: {
-                    msg: error.response.data.msg,
-                }
-            })
-        }
-        clearAlert()
-    }
-
-    return <AppContext.Provider value={{ ...state, displayAlert, setupUser }}>
-        {children}
-    </AppContext.Provider>
-}
-
-const useAppContext = () => {
-    return useContext(AppContext)
-}
-
-export { AppProvider, initialState, useAppContext }
