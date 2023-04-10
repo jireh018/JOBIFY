@@ -23,6 +23,7 @@ function App() {
           <ProtectedRoute>
             <SharedLayout />
           </ProtectedRoute>
+
         } >
           <Route index element={<Stats />} />
           <Route path="all-jobs" element={<AllJobs />} />
@@ -38,3 +39,8 @@ function App() {
 }
 
 export default App;
+
+
+{/*<ProtectedRoute>
+            <SharedLayout />
+        </ProtectedRoute>*/}
